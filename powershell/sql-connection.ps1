@@ -14,30 +14,45 @@ $creds = New-Object -TypeName System.Management.Automation.PSCredential -Argumen
 
 $sqlConnect = Open-MySqlConnection -ConnectionName mysqlConn -Server 127.0.0.1 -Database dat4004 -Port 43306 -Credential $creds -WarningAction SilentlyContinue
 
-$data = Invoke-SqlQuery -query "SELECT * FROM some_data" -ConnectionName mysqlConn
+#$data = Invoke-SqlQuery -query "SELECT * FROM some_data" -ConnectionName mysqlConn
 
 $Path = "datasets/10032870-36f2-4426-aa33-b339b906de66_Data.csv"
-$TableName = "some_data"
+$TableName = (ConvertTo-MySqlFriendly -Value "World Bank Data")
 
-$upload = (Get-Content -Path $Path)
+$Upload = (Get-Content -Path $Path | ConvertFrom-CSV)
 
-Foreach ($line in $upload) {
+$Keys = @()
+Foreach ($Property in $Upload[0].PSObject.Members | ?{ $_.MemberType -eq 'NoteProperty'}) {
+
+    $Key = $Property.Name
+    $Keys += $Key
+
+}
+
+Foreach ($Item in $Upload) {
+
 
     $InsertValues = ""
 
-    #Write-Host $line -ForegroundColor Green
+ 
 
-    $Values = $line.split(',')
-    $Values[0] = '"'+$Values[0]+'"'
-
-    $InsertValues = $Values -join ','
+    $InsertValues = $FixedValues -join ','
 
     $Query = ("INSERT INTO $TableName (fields) VALUES (values)".Replace('fields', $InsertFields)).Replace('values',$InsertValues)
-
-
     $Query = $Query.Replace('values',$InsertValues)
-    #Write-Host $Query
 
-    Invoke-SqlQuery -ConnectionName mysqlConn -Query $Query 
+    Write-Host $Query
+    #Write-Host "." -NoNewline
+
+    Try {
+        Invoke-SqlUpdate -ConnectionName mysqlConn -Query $Query
+    }
+    Catch {
+
+        Write-Host "Failed"
+        Pause
+
+    }
+
     
 }

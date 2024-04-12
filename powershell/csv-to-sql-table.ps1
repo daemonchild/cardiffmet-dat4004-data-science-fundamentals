@@ -1,4 +1,23 @@
 
+Function ConvertTo-MySqlFriendly () {
+#
+#
+# Returns: String
+
+    param (
+        [Parameter(Mandatory=$True)]
+        [String] $Value
+    )
+
+    $NewValue = $Value.Replace(' ','_').ToLower()
+    $NewValue  = $NewValue  -Replace "[^a-zA-Z0-9_]"
+
+    # What is the max length for a column or table name?
+
+    Return $NewValue
+
+}
+
 Function Get-FieldTitlesFromCSV () {
 #
 #
@@ -27,8 +46,7 @@ Function Get-FieldTitlesFromCSV () {
 
         Foreach ($Field in $FieldsArray) {
 
-            $Field = $Field.Replace(' ','_').ToLower()
-            $Field = $Field -Replace "[^a-zA-Z0-9_]"
+            $Field = (ConvertTo-MySqlFriendly -Value $Field)
 
             $FixedFields = $FixedFields + $Field
         }
@@ -66,13 +84,18 @@ Function New-CreateTableMySql () {
     $Counter = 1
 
     # Add Header
+
+    $TableName = (ConvertTo-MySqlFriendly -Value $TableName)
+
     $SQLText = $SQLText + $SQLTemplateHeader.Replace('table_name',$TableName) + $NL
 
     # Process Fields List
     Foreach ($Field in $FieldsWithCount.Keys) {
 
+        $MysqlFriendlyField = (ConvertTo-MySqlFriendly -Value $Field)
+
         $DataType = "varchar("+$FieldsWithCount.$Field+"),"
-        $FieldDef = ($SQLTemplateLine.Replace('column_name',$Field)).Replace('data_type', $DataType)
+        $FieldDef = ($SQLTemplateLine.Replace('column_name',$MysqlFriendlyField).Replace('data_type', $DataType))
 
         # Remove Last Comma
         If ($Counter -eq $FieldsWithCount.Count) {
