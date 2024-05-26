@@ -1,3 +1,6 @@
+
+# https://matplotlib.org/stable/users/explain/colors/colormaps.html
+
 graph_colours=['red', 'orange', 'yellow', 'green','blue','indigo','violet']
 
 countries_csv_url = "https://raw.githubusercontent.com/daemonchild/dat4004-data-science-fundamentals/main/datasets/countries/world-regions-according-to-the-world-bank.csv?token=GHSAT0AAAAAACQ44HN4VOT45G7DEZRN6NOEZSGEINA"
