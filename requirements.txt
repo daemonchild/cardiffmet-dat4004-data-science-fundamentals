@@ -1,5 +1,9 @@
+jupyter
 pandas
 matplotlib
 scikit-learn
 ipykernel
 seaborn
+plotly
+chart_studio
+nbformat
