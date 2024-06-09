@@ -1,0 +1,592 @@
+# Climate Change Data Analysis
+
+
+
+Course: DAT4004-23-S2
+
+
+
+Author: Tom Rowan, ST20285213
+
+
+
+Tutor: Priya
+## Introduction
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+
+
+*The objective of the proposed data analysis tasks is to provide up-to-date and meaningful analysis that will help users to inform decisions on future policy and services.*
+
+
+
+---
+## Contents Page
+## Import Libraries
+### Check for Internet Connectivity
+
+
+
+This notebook is saved with all code blocks run to completion, so all intended graphics should be present. A free online account is required to create the PlotLy figures, and will require live Internet access if you wish to re-run this notebook. In the event that there is no Internet connectivity, this notebook will skip re-generation any Plotly figures, rather than produce timeouts.
+
+
+
+If the notebook detects Internet connectivity it will also pull the datasets from the Internet; else it will expect a local CSV file.
+
+
+
+**change account creds below**
+If you have any issues with importing the various libraries, a requirements file is included.
+
+
+
+```
+
+jupyter
+
+pandas
+
+matplotlib
+
+scikit-learn
+
+ipykernel
+
+seaborn
+
+plotly
+
+chart_studio
+
+nbformat
+
+tabulate
+
+```
+---
+
+
+
+# Task 1 - Import and Preprocess Data Sets
+>- i.	Download the dataset
+
+>- ii.	Do the necessary preprocessing for example i.e., check for any null value or outlier. If found replace that with mean value and delete repeating factors as necessary.
+## UNSD Countries and Region Dataset
+
+
+
+The United Nations provides a simple dataset which classifies each country by region. This data will be used to enrich analysis of the main datasets.
+
+
+
+To explore the relative size of the regions, I have performed counting operations, and plotted the results. The data is relatively clean and requires only the removal of non-relevant columns. The country names in this data set are 'better' than those in the World Bank datasets, and this data includes regions ("Americas") and subregions ("Northern Europe") that can be mapped to countries in the World Bank dataset. This will give two levels of aggregation - global regions, and subregions.
+Dataset source: https://unstats.un.org/unsd/methodology/m49/overview/
+
+
+
+Accessed: 15/05/2024
+
+
+
+Note that it is not possible to provide a link directly to a csv file due to the javascript-based download process on this page.
+
+
+
+I have put the dataset online here: https://datascience.daemonchild.com/year1/dat4004/datasets/unsd/unsd-countrycodes.csv
+Many of the Intermediate region values are empty, and one of the subregions is also empty:
+Simple graphing of this data to show the scale of the data under various groupings.
+### Mapping these Regions
+
+
+
+Maps are the best way to visualise the regional groupings:
+Useful variables set in the above section:
+
+
+
+| Variable Name | Elements | Type |
+
+|--|--|--|
+
+| countries_df | Country,Code,Region | Pandas DF |
+
+| countries | Country Names | List |
+
+| regions | Region Names | List |
+
+| subregions | Subregion Names | List |
+
+| country_codes | Country Codes | List |
+## World Bank Development Indicator Data
+
+
+
+I am attempting to explore how land usage affects climate change. The World Bank Development Indicators dataset includes use of land, electricity generation methods and volumes of CO2 produced by source.
+
+
+
+Reference: https://databank.worldbank.org/reports.aspx?source=2&Topic=19#advancedDownloadOptions
+
+
+
+Accessed: 10/05/2024
+Describe the process:
+
+
+
+### Series Code Analysis
+
+
+
+This dataset comprises multiple subtables of unrelated data concatenated, sharing the same column names. The Series Code is the key to each sub-table, each containing a complete set of records for each country. Here I am investating the series code. It is made up of a number of tokens which identify the dataset purpose. Understanding this code will allow easier searching of the data series for relevant data.
+**edit me!**
+
+
+
+Create a Unit column by splitting the "SeriesName" column - the name of the series - into two parts.
+
+
+
+For example "Agricultural land (sq. km)" becomes SeriesName: "Agricultural Land", Unit: "SQ. KM".
+
+
+
+** why did I bother tbh - didn't use this at all, but it taught me a lot. **
+### Null Values
+The dataset contains a large number of elements where there is a null value. This has been recorded in the dataset as a '..' value. For the purposes of this study, unreported figures and zero figures are equivalent, as a zero figure is in most cases highly unlikely, excepting perhaps small island nations.
+## Joining UNSD and WorldBank Tables
+
+
+
+I am merging the tables based on the ISOcode for the country.
+Set Column Types now that we have built the entire dataframe.
+### Separate Aggregated Data, and Discuss Outliers
+
+As well as data for distinct countries, the World Bank dataset also includes data from their own aggregated regions. This data can be extracted from the working data set and saved. The Kosovo country code is not found in the UNSD data. It is an empty row and can also be removed, as shown from this extract from the CSV:
+
+
+
+> Agricultural Land,AG.LND.AGRI.K2,Kosovo,XKX,..,..,..,..,..,..,..,..,..,..,..,..,..,..,..,..,..,..,..,..,..,..,..,..
+
+
+
+To do this, I am using the country_codes extracted from the UNSD dataset, and using the intersection between the "ISOcode" column to filter the data into two dataframes. I have saved these to CSV once completed.
+
+
+
+In terms of outliers, there is a huge variation in the values within the dataset. Consider the area of 'China' vs 'Jersey', and yet both extremes are equally valid for this study. Only countries with no data need be removed - and this will be best carried out once individual data series are extracted from the main data set, ready for comparison together. At that point, I will preprocess the data to remove problematic rows from the sample.
+I have define a simple graphing function to allow me to loop through the datasets and produce a time series graph to view the shape and magnitude of the data.
+Using the function, I will now plot all the data series in turn to ascertain the shape of the dataset graphically.
+This is clearly an raw and unsuitable plot for clearly showing this data, (even using logarithmic values). However, these plots how the general 'shape' of the data sets, including where holes exist in the data.
+Variables set in the above section:
+
+
+
+| Variable Name | Elements | Type |
+
+|--|--|--|
+
+| country_data_df| Country,Code,SeriesCode,{Data Values} | Pandas DF |
+
+| series_code | Series Code | List |
+
+| series_names | Series Names | List |
+
+---
+
+
+
+# Task 2 - Data Analysis
+
+
+
+## Task Questions
+
+
+
+The datasets available from the World Bank are extensive. I have collected together a wide selection of series from the Development Indicators range. This allows me to pose a number of questions that should provide insight for policy makers.
+
+
+
+1) Are CO2 emissions increasing over time?
+
+2) Rank regions by CO2 emissions. Who is worst?
+
+3) Predict Future CO2 Emission Trends
+
+4) Is there a link between population and birth-rate to CO2 emmissions?
+
+5) Describe the trends in land use by region.
+
+6) Does Land Usage Type Corollate to Total CO2 Emissions?
+
+7) Show elecricial consumption over time vs renewable production, by region.
+
+8) Is there a correlation between electricity produced by renewables and CO2 emissions?
+
+
+
+
+
+what insights.... is there corrolation.... renable vs Co2.
+
+
+
+What should policy makers do with this information...?
+
+
+
+task 3 clustering basedon regression.
+## Q1: Are CO2 emissions increasing over time?
+
+
+
+This is an interesting question because while it is common understanding that global emissions are increasing in general, this may not be true for all regions, or countries.
+
+
+
+In this question, I will utilise data on total CO2 emissions.
+
+
+
+I have selected the following series to answer this question:
+
+
+
+StudyCodes: EN.ATM
+
+
+
+|Series Code|Description|Unit|
+
+|-|-|-|
+
+EN.ATM.CO2E.KT | CO2 Emissions | Tons x 10^3 (KT)
+As an initial review, I have mapped the data at the extremes of the data range - 2000 and 2020 - to review changes over the time series. From these maps, it's clear to see two facts:
+
+
+
+- Global Emissions have increased. The scale of the legend on the maps demonstrates this clearly.
+
+- The leader board of emitters has changed over time. 
+Summed totals for each subregion, plotted over time:
+To show a total global output, I have applied a second summation:
+Is it all bad news however? Who reduced their emissions by the end of the 20 year period?
+### Conclusion
+
+
+
+From this analysis, it is clear that emissions are increasing, globally, despite some regions and individual countries changes. There are small downward bumps based on reaction to global events, but generally the worst polluters are still getting worse.
+
+
+
+Global emissions peaked in 2018. Understandably, the effect of the SARS-CoV-2 pandemic is shown as a marked decrease, but the trends was already slightly downwards. The limitations of the dataset show here.
+---
+
+## Q2: Rank Regions by CO2 Emissions. Who is worst?
+
+
+
+Following on from the last analysis, I will produce a global ranking table for each subregion over time.
+
+
+
+
+
+I will first group the data by subregion, then sum the total emissions for each subregion. Once ordered by this sum, the rank can be assigned, in decending order (where highest value = rank 1, next highest = 2).
+
+
+
+I have selected the following series to answer this question:
+
+
+
+StudyCodes: EN.ATM
+
+
+
+|Series Code|Description|Unit|
+
+|-|-|-|
+
+EN.ATM.CO2E.KT | CO2 Emissions | Tons x 10^3 (KT)
+From the plots produced in Task 1, I will compare the values on a line graph using a logarithmic scale. I will sum and then perform a $\log_{10}$ operation to allow for comparison between regions. Using this plot, we can see that there is a lot of movement over twenty years, some increasing and some decreasing their output.
+Extract Mean value for CO2 by Region, to gain insight into whether a subregion is the highest producer, on average. This takes into account that some regions may include high volume emitters *and* at the same time include very low level emitters. This shows that Northern America has been consistenly a higher producer - on average - for longer than Eastern Asia.
+The question asks who are the worst CO~2~ emitters. The graphs above clearly show that some regions are increasing their emissions, while others are reducing. A heatmap is another way of clearly showing the worst polluters, over time:
+### Produce Ranking Table
+
+
+
+To create a clear ranking table and plot, I will use a groupby with a sum, and then ranking.
+It is also easy to produce a country rank table, although this will be limited to the Top 20 worst polluters for brevity. This limit will create holes in the data where countries drop out of this ranking.
+### Conclusion
+
+
+
+There are clear consistent winners on the CO2 Emissions Leaderboard. While the general trend is upwards, as question one shows, the rankings change. Why countries are moving in the emissions ranking is not clear without further analysis. Does the UK move from 7th to 18th because it has drastically reduced emissions, or because others have increased theirs equally drastically?
+
+
+
+Policy makers can use this chart to see how their country - or region - is trending against others.
+
+---
+
+## Q3: Predict Future CO2 Emission Trends
+
+
+
+In the previous questions, I explored the historical figures for global CO2 emissions. In this question, I will aim to produce trending data for each subregion.
+
+
+
+In this question, I will utilise data on total $CO_{2}$ emissions. I have already created some the datasets required to begin this question.
+
+
+
+I have selected the following series to answer this question:
+
+
+
+StudyCodes: EN.ATM
+
+
+
+|Series Code|Description|Unit|
+
+|-|-|-|
+
+EN.ATM.CO2E.KT | CO2 Emissions | Tons x 10^3 (KT)
+
+### Conclusion
+
+---
+---
+
+## Q4: Is there a link between population and birth-rate to CO2 emissions?
+
+
+
+I have selected the following series to answer this question:
+
+
+
+StudyCodes: EN.ATM
+
+
+
+|Series Code|Description|Unit|
+
+|-|-|-|
+
+EN.ATM.CO2E.KT | CO2 Emissions | Tons x 10^3 (KT)
+
+SP.POP.TOTL | Total Polulation | Value
+
+SP.DYN.CBRT.IN | Birth rate, crude (per 1,000 people) | Value
+### Population vs CO2 Emissions
+### Training the Linear Regression Model
+
+
+
+I have created a modified function to perform a linear regression and then plot the result on the same graph. The regression ibject is returned for future use.
+**(Comment on this)**
+### Birthrate vs Emissions
+
+
+
+Does a fast growing population also mean more CO2? Using the linear regression plot function:
+### Conclusion
+
+---
+
+## Q5: Describe the trends in land use by region.
+
+
+
+I have selected the following series to answer this question:
+
+
+
+StudyCodes: EN.ATM
+
+
+
+|Series Code|Description|Unit|
+
+|-|-|-|
+
+AG.LND.TOTL.K2 | Total Land Area | Sq. Km.
+
+AG.LND.TOTL.RU.K2 | Total Rural Land Area | Sq. Km.
+
+AG.LND.TOTL.UR.K2 | Total Urban Land Area | Sq. Km.
+
+AG.LND.AGRI.K2 | Agricultural Land | Sq. Km.
+
+AG.LND.FRST.K2 | Forested Land | Sq. Km.
+
+We can compare changes in urban and rural land usage, giving a trend. These data series are not directly compariable with the others I have selected, as the only data points are for the years 2000 and 2015.
+These graphs show the distribution of the increase in urban and rural land per region:
+Another fun way to view this data is as follows:
+Compare with total as a percentage?
+### Conclusion
+
+There is a general global trend towards an increase in urban land, and a decrease in rural land. Policy makers may find this information useful when allocating funding towards rural vs urban development. Knowing where people are moving, and how land use is changing is key to protecting valuable and rare environments.
+---
+
+## Q6: Does Land Usage Type Corollate to Total CO2 Emissions?
+
+
+
+In this question, I will use data on land usage area, and plot against CO~2~ emissions.
+
+
+
+I will plot each type of land usage data against the emissions for each country. I would intuitively expect to see that a predominance of one type of land usage in an area would have a different effect on overall CO~2~ output, however whether this has an effect from the data remains to be discovered. From this policy decisions can be informed regarding future planning decisions withe a view to Net Zero.
+
+
+
+I have selected the following series to answer this question:
+
+
+
+StudyCodes: AG.LND, EN.ATM
+
+
+
+|Series Code|Description|Unit|
+
+|-|-|-|
+
+AG.LND.TOTL.K2 | Total Land Area | Sq. Km.
+
+AG.LND.TOTL.RU.K2 | Total Rural Land Area | Sq. Km.
+
+AG.LND.TOTL.UR.K2 | Total Urban Land Area | Sq. Km.
+
+AG.LND.AGRI.K2 | Agricultural Land | Sq. Km.
+
+AG.LND.FRST.K2 | Forested Land | Sq. Km.
+
+EN.ATM.CO2E.KT | CO~2~ Emissions | Tons x 10^3 (KT)
+
+I am precalculating the log10 values and storing in individual dataframes. I did originally place all these in one dataframe as follows, however there are an uneven number of zero values in each dataset - some countries report data for one series, but not another. 
+
+
+
+I intend to drop all zero values from each series. Each series starts at 215 rows, but there are many countries with zero values. I also wish to maintain as many values in each list as possible. This requires a separate dataframe to be used for each analysis phase.
+On one plot:
+Using the function from the prior question, we can now easily run a linear regression model and plot for each series:
+### Conclusion
+
+---
+
+## Q7: Show electrical consumption over time, by region.
+
+
+
+I have selected the following series to answer this question:
+
+
+
+StudyCodes: EN.ATM
+
+
+
+|Series Code|Description|Unit|
+
+|-|-|-|
+
+EG.USE.ELEC.KH.PC    | Electric power consumption |(kWh per capita)
+
+
+
+
+
+A quick set of plots to show the series maximums, minimums and shape graphically, using the UK as a sample. 
+Now, I will group and sum by subregion and plot:
+
+### Conclusion
+
+---
+
+## Q8: Is there a correlation between electricity produced by renewables and CO2 emissions?
+
+
+
+I have selected the following series to answer this question:
+
+
+
+USe this table for Q8
+
+
+
+|Series Code|Description|Unit|
+
+|-|-|-|
+
+EN.ATM.CO2E.KT | CO2 Emissions | Tons x 10^3 (KT)
+
+EG.ELC.COAL.ZS       | Electricity production from coal sources |(% of total)
+
+EG.ELC.HYRO.ZS       | Electricity production from hydroelectric sources|(% of total)   
+
+EG.ELC.NGAS.ZS       | Electricity production from natural gas sources|(% of total)
+
+EG.ELC.NUCL.ZS       | Electricity production from nuclear sources |(% of total)
+
+EG.ELC.PETR.ZS       | Electricity production from oil sources | (% of total)   
+
+EG.ELC.RNWX.ZS       | Electricity production from renewable sources, excluding hydroelectric | (% of total)
+
+EG.FEC.RNEW.ZS       | Renewable energy consumption |(% of total final energy consumption)
+
+EG.IMP.CONS.ZS       | Energy imports, net |(% of energy use) 
+
+I am defining nuclear energy as 'non-renewable':
+
+
+
+> Experts still question whether the world should call nuclear power a "renewable" energy resource. Those who want to classify nuclear energy as renewable cite the fact that it has low carbon emission -- just the way renewable sources such as wind and solar do. Non-renewable fuels, such as natural gas and oil, produce byproducts that harm the environment through global warming emissions. Those opposed to calling nuclear power renewable note that nuclear power plants create harmful waste.
+
+
+
+
+
+Source: https://sciencing.com/nuclear-energy-renewable-nonrenewable-4579290.html
+Using the function created previously, we can run a linear regression model for each dataset and plot very easily:
+### Conclusion
+
+---
+
+# Task 3 - Classification/Clustering 
+
+
+
+> Use appropriate classification/clustering technique to classify/cluster the chosen data based on data analysis requirements to discover meaningful insights.
+
+Let's look at clustering within the CO2 Emissions data
+
+Is there any relationship between cluster of a country and the subregion it belongs to?
+
+
+
+
+
+Perform normalisation across all series, save into cluster_dfs dictionary:
+Perform KMeans clustering
+Cycle through all series to perform clustering
+Interpret above, per series:
+
+
+
+Now run SSE calculations:
+## Conclusion
+---
+
+# Task 4 - Discussion
+
+
+
+> Provide a brief discussion to provide some recommendations how the policies could be regulated to achieve the wellbeing goals based on data analysis results.
