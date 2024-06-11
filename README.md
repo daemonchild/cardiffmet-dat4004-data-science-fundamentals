@@ -15,3 +15,4 @@ Climate Change is highly likely to become more and more of a subject of interest
 Lack of consensus and diverse opinion set Climate Change issues to be hard fought over in future elections globally.
 
 This report aims to arm policy makers with useful insights.
+
